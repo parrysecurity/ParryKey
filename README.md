@@ -10,7 +10,7 @@ ParryKey is a modern, secure, client-side password generator built by ParrySecur
 Designed with enterprise-grade UI/UX, real-time password analysis, QR export, history management, and strong cryptographic randomness.
 
 </div>
-<img width="1672" height="941" alt="ChatGPT Image May 20, 2026, 03_03_38 PM" src="https://github.com/user-attachments/assets/3181a371-c83e-4070-ae6b-9076d051717f" />
+
 
 📑 Table of Contents
 ✨ Features

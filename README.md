@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![ParryKey Banner](https://via.placeholder.com/1200x350/F5F7FB/2563EB?text=ParryKey+%E2%80%94+Secure+Password+Generator)
+![ParryKey Banner](https://password-generator.parrysecurity.online/banner.png)
 
 ### Enterprise-Grade Password Generator by ParrySecurity
 
@@ -15,6 +15,13 @@
 ![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-yellow?style=for-the-badge\&logo=javascript)
 ![Security](https://img.shields.io/badge/Security-Client_Side-green?style=for-the-badge\&logo=shield)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey?style=for-the-badge)
+## 🌐 Live Demo
+
+🚀 Try ParryKey Live Here:
+
+[![Live Website](https://img.shields.io/badge/Launch-ParryKey-blue?style=for-the-badge&logo=googlechrome&logoColor=white)](https://password-generator.parrysecurity.online/)
+
+🔗 https://password-generator.parrysecurity.online/
 
 <br>
 
@@ -23,6 +30,7 @@
 </div>
 
 ---
+<img width="1672" height="941" alt="ChatGPT Image May 20, 2026, 03_03_38 PM" src="https://github.com/user-attachments/assets/12906f80-ac69-4e75-a0fa-3cf0650284bc" />
 
 # 📖 Table of Contents
 

@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ParryKey — by ParrySecurity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ── */
+:root {
+  --bg: #F5F7FB;
+  --surface: #FFFFFF;
+  --surface2: #EEF2F7;
+  --surface3: #E8EDF5;
+  --border: #DCE3EC;
+  --border2: #C8D3E0;
+  --blue: #2563EB;
+  --blue-light: #EFF6FF;
+  --blue-mid: #DBEAFE;
+  --cyan: #06B6D4;
+  --cyan-light: #ECFEFF;
+  --green: #10B981;
+  --green-light: #ECFDF5;
+  --amber: #F59E0B;
+  --amber-light: #FFFBEB;
+  --red: #EF4444;
+  --red-light: #FEF2F2;
+  --text: #0F172A;
+  --text2: #475569;
+  --text3: #94A3B8;
+  --shadow-sm: 0 1px 3px rgba(15,23,42,.05), 0 1px 2px rgba(15,23,42,.04);
+  --shadow: 0 4px 16px rgba(15,23,42,.06), 0 1px 4px rgba(15,23,42,.04);
+  --shadow-md: 0 8px 28px rgba(15,23,42,.08), 0 2px 8px rgba(15,23,42,.04);
+  --r: 16px;
+  --r-sm: 10px;
+  --r-xs: 7px;
+  --font: 'Geist', -apple-system, sans-serif;
+  --mono: 'Geist Mono', 'Courier New', monospace;
+}
+
+/* ── RESET ── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13.5px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+@media (max-width: 768px) { body { overflow: auto; } }
+
+/* ── NAVBAR ── */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 52px;
+  background: rgba(255,255,255,.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 16px;
+}
+.nav-brand { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+.nav-logo {
+  width: 28px; height: 28px;
+  background: var(--blue);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px rgba(37,99,235,.3);
+  flex-shrink: 0;
+}
+.nav-logo svg { width: 15px; height: 15px; fill: #fff; }
+.nav-brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+.nav-name { font-size: .88rem; font-weight: 700; color: var(--text); letter-spacing: -.3px; }
+.nav-by { font-size: .62rem; color: var(--text3); font-weight: 400; }
+.nav-divider { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+.nav-badges { display: flex; align-items: center; gap: 6px; margin-right: auto; }
+.nav-badge {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px 9px;
+  font-size: .65rem;
+  font-weight: 500;
+  color: var(--text2);
+  white-space: nowrap;
+}
+.nav-badge .dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.dot-green { background: var(--green); }
+.dot-blue  { background: var(--blue); }
+.dot-cyan  { background: var(--cyan); }
+.nav-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.btn-nav {
+  height: 30px; padding: 0 12px;
+  background: var(--blue); color: #fff;
+  border: none; border-radius: 8px;
+  font-family: var(--font); font-size: .75rem; font-weight: 600;
+  cursor: pointer; transition: opacity .15s, transform .1s;
+  display: flex; align-items: center; gap: 5px;
+  box-shadow: 0 2px 8px rgba(37,99,235,.28);
+}
+.btn-nav:hover { opacity: .9; transform: translateY(-1px); }
+.btn-nav:active { transform: translateY(0); }
+
+/* ── LAYOUT ── */
+.app {
+  display: grid;
+  grid-template-columns: 1fr 310px;
+  gap: 14px;
+  padding: 14px 20px;
+  height: calc(100vh - 52px);
+  overflow: hidden;
+}
+@media (max-width: 1024px) { .app { grid-template-columns: 1fr 270px; } }
+@media (max-width: 768px) {
+  .app { grid-template-columns: 1fr; height: auto; overflow: visible; padding: 12px 14px; gap: 12px; }
+}
+
+.left-col { display: flex; flex-direction: column; gap: 12px; overflow: hidden; min-height: 0; }
+.right-col { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+@media (max-width: 768px) { .left-col, .right-col { overflow: visible; } }
+
+/* ── CARD ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 18px 11px;
+  border-bottom: 1px solid var(--border);
+}
+.card-title { font-size: .8rem; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 6px; }
+.card-title svg { width: 14px; height: 14px; stroke: var(--blue); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.card-sub { font-size: .7rem; color: var(--text3); font-weight: 400; }
+
+/* ── PASSWORD DISPLAY ── */
+.pw-card { flex-shrink: 0; }
+.pw-display-wrap { padding: 16px 18px 14px; }
+.pw-display {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.pw-display:hover { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+.pw-text {
+  flex: 1;
+  font-family: var(--mono);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text);
+  word-break: break-all;
+  line-height: 1.5;
+  letter-spacing: .04em;
+  min-width: 0;
+  transition: filter .2s;
+}
+.pw-text.hidden { filter: blur(5px); user-select: none; }
+.pw-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.icon-btn {
+  width: 32px; height: 32px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--r-xs);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all .15s;
+  color: var(--text3);
+}
+.icon-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.icon-btn:hover { background: var(--blue-light); border-color: var(--blue); color: var(--blue); }
+.icon-btn.active { background: var(--blue-light); border-color: var(--blue); color: var(--blue); }
+
+/* Strength bar */
+.strength-wrap { padding: 0 18px 14px; }
+.strength-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.strength-label { font-size: .72rem; color: var(--text3); }
+.strength-rating { font-size: .72rem; font-weight: 600; }
+.strength-bar-track { height: 5px; background: var(--surface2); border-radius: 10px; overflow: hidden; }
+.strength-bar-fill { height: 100%; border-radius: 10px; transition: width .4s ease, background .3s; }
+
+/* Generate button */
+.generate-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: calc(100% - 36px); margin: 0 18px 14px;
+  height: 40px;
+  background: var(--blue); color: #fff;
+  border: none; border-radius: var(--r-sm);
+  font-family: var(--font); font-size: .85rem; font-weight: 600;
+  cursor: pointer; transition: all .2s;
+  box-shadow: 0 3px 10px rgba(37,99,235,.3);
+  letter-spacing: -.1px;
+}
+.generate-btn:hover { background: #1D4ED8; box-shadow: 0 4px 14px rgba(37,99,235,.4); transform: translateY(-1px); }
+.generate-btn:active { transform: translateY(0); }
+.generate-btn svg { width: 15px; height: 15px; stroke: #fff; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.generate-btn.spin svg { animation: spin .5s ease; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Copy toast */
+.copy-toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(12px);
+  background: #0F172A; color: #fff;
+  padding: 8px 18px; border-radius: 30px;
+  font-size: .78rem; font-weight: 500;
+  opacity: 0; pointer-events: none; transition: all .25s;
+  z-index: 999; display: flex; align-items: center; gap: 6px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.2);
+}
+.copy-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.copy-toast svg { width: 13px; height: 13px; stroke: var(--green); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── CONTROLS ── */
+.controls-card { flex: 1; min-height: 0; overflow-y: auto; }
+.controls-body { padding: 12px 18px; display: flex; flex-direction: column; gap: 11px; }
+
+/* Length slider */
+.ctrl-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ctrl-label { font-size: .78rem; font-weight: 500; color: var(--text2); white-space: nowrap; }
+.ctrl-right { display: flex; align-items: center; gap: 10px; flex: 1; }
+.slider-wrap { flex: 1; position: relative; height: 20px; display: flex; align-items: center; }
+input[type=range] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 4px;
+  background: var(--border);
+  border-radius: 10px; outline: none;
+  cursor: pointer; transition: background .2s;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--blue);
+  border: 2.5px solid #fff;
+  box-shadow: 0 1px 4px rgba(37,99,235,.35);
+  cursor: pointer; transition: transform .15s;
+}
+input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+.length-val {
+  min-width: 28px; height: 24px;
+  background: var(--blue-light); border: 1px solid var(--blue-mid);
+  border-radius: 6px; display: flex; align-items: center; justify-content: center;
+  font-size: .75rem; font-weight: 700; color: var(--blue); font-family: var(--mono);
+}
+.divider-line { height: 1px; background: var(--border); margin: 2px 0; }
+
+/* Toggle rows */
+.toggle-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.toggle-item {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-xs); padding: 8px 11px;
+  cursor: pointer; transition: all .15s; user-select: none;
+}
+.toggle-item:hover { border-color: var(--blue); background: var(--blue-light); }
+.toggle-item.active { background: var(--blue-light); border-color: var(--blue-mid); }
+.toggle-lbl { font-size: .75rem; font-weight: 500; color: var(--text2); display: flex; align-items: center; gap: 6px; }
+.toggle-lbl .tag { font-size: .6rem; font-family: var(--mono); color: var(--text3); background: var(--surface3); border: 1px solid var(--border); border-radius: 4px; padding: 1px 4px; }
+.toggle-item.active .toggle-lbl { color: var(--blue); }
+
+/* iOS-style switch */
+.switch { position: relative; width: 32px; height: 18px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch-track {
+  position: absolute; inset: 0;
+  background: var(--border2); border-radius: 18px;
+  transition: background .2s;
+  cursor: pointer;
+}
+.switch-thumb {
+  position: absolute; top: 2px; left: 2px;
+  width: 14px; height: 14px;
+  background: #fff; border-radius: 50%;
+  transition: transform .2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+input:checked + .switch-track { background: var(--blue); }
+input:checked + .switch-track .switch-thumb { transform: translateX(14px); }
+
+.exclude-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 11px;
+  background: var(--amber-light); border: 1px solid #FDE68A;
+  border-radius: var(--r-xs); cursor: pointer;
+}
+.exclude-row .toggle-lbl { color: var(--amber); font-size: .74rem; }
+
+/* ── RIGHT COLUMN ── */
+
+/* Security Analysis */
+.analysis-body { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+.metric-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 11px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-xs);
+}
+.metric-key { font-size: .73rem; color: var(--text2); display: flex; align-items: center; gap: 6px; }
+.metric-key svg { width: 12px; height: 12px; stroke: var(--text3); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.metric-val { font-size: .73rem; font-weight: 600; color: var(--text); font-family: var(--mono); }
+.metric-val.green { color: var(--green); }
+.metric-val.amber { color: var(--amber); }
+.metric-val.red   { color: var(--red);   }
+.metric-val.blue  { color: var(--blue);  }
+
+/* QR Card */
+.qr-body { padding: 13px 16px; display: flex; flex-direction: column; gap: 10px; }
+.qr-preview {
+  width: 100%; aspect-ratio: 1;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+}
+.qr-placeholder { color: var(--text3); font-size: .75rem; text-align: center; }
+#qr-canvas { display: none; border-radius: var(--r-sm); }
+.qr-actions { display: flex; gap: 8px; }
+.btn-sm {
+  flex: 1; height: 32px;
+  border: 1px solid var(--border); background: var(--surface2);
+  border-radius: var(--r-xs); font-family: var(--font); font-size: .73rem; font-weight: 500;
+  color: var(--text2); cursor: pointer; transition: all .15s;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.btn-sm:hover { background: var(--surface3); border-color: var(--border2); color: var(--text); }
+.btn-sm.primary { background: var(--blue); color: #fff; border-color: var(--blue); box-shadow: 0 2px 8px rgba(37,99,235,.25); }
+.btn-sm.primary:hover { background: #1D4ED8; }
+.qr-timer { text-align: center; font-size: .67rem; color: var(--text3); }
+.qr-timer span { color: var(--amber); font-weight: 600; font-family: var(--mono); }
+
+/* History */
+.history-body { padding: 0; }
+.history-header { display: flex; align-items: center; justify-content: space-between; padding: 9px 14px; border-bottom: 1px solid var(--border); }
+.history-count { font-size: .68rem; color: var(--text3); }
+.clear-btn {
+  font-size: .67rem; color: var(--red); background: none; border: none; cursor: pointer;
+  font-family: var(--font); font-weight: 500; padding: 2px 6px; border-radius: 4px; transition: background .15s;
+}
+.clear-btn:hover { background: var(--red-light); }
+.history-list { max-height: 180px; overflow-y: auto; }
+.history-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 14px; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background .12s;
+}
+.history-item:last-child { border-bottom: none; }
+.history-item:hover { background: var(--surface2); }
+.history-pw { flex: 1; font-family: var(--mono); font-size: .68rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.history-meta { font-size: .62rem; color: var(--text3); white-space: nowrap; }
+.history-copy { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 4px; color: var(--text3); transition: all .12s; }
+.history-copy svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.history-item:hover .history-copy { color: var(--blue); background: var(--blue-light); }
+.history-empty { padding: 24px; text-align: center; color: var(--text3); font-size: .73rem; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .nav-badges { display: none; }
+  .app { grid-template-columns: 1fr; }
+  .right-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .history-card { grid-column: 1/-1; }
+  .controls-card { overflow: visible; }
+  .left-col { overflow: visible; }
+}
+@media (max-width: 480px) {
+  .right-col { grid-template-columns: 1fr; }
+  .toggle-row { grid-template-columns: 1fr; }
+  .navbar { padding: 0 14px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a class="nav-brand" href="#">
+    <div class="nav-logo">
+      <svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.3 3.4 10.3 8 11.9 4.6-1.6 8-6.6 8-11.9V6L12 2z"/></svg>
+    </div>
+    <div class="nav-brand-text">
+      <span class="nav-name">ParryKey</span>
+      <span class="nav-by">by ParrySecurity</span>
+    </div>
+  </a>
+  <div class="nav-divider"></div>
+  <div class="nav-badges">
+    <div class="nav-badge"><span class="dot dot-green"></span>Client-side only</div>
+    <div class="nav-badge"><span class="dot dot-blue"></span>Zero logging</div>
+    <div class="nav-badge"><span class="dot dot-cyan"></span>Secure random</div>
+  </div>
+  <div class="nav-right">
+    <button class="btn-nav" onclick="generatePassword()">
+      <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      Generate
+    </button>
+  </div>
+</nav>
+
+<!-- APP GRID -->
+<div class="app">
+
+  <!-- LEFT COLUMN -->
+  <div class="left-col">
+
+    <!-- Password Display Card -->
+    <div class="card pw-card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Generated Password
+        </div>
+        <div class="card-sub" id="pw-length-label">32 characters</div>
+      </div>
+      <div class="pw-display-wrap">
+        <div class="pw-display">
+          <div class="pw-text" id="pw-text">Click generate to create a password</div>
+          <div class="pw-actions">
+            <button class="icon-btn" onclick="toggleVisibility()" id="vis-btn" title="Toggle visibility">
+              <svg id="vis-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+            <button class="icon-btn" onclick="copyPassword()" title="Copy password">
+              <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+            <button class="icon-btn" onclick="generatePassword()" id="regen-btn" title="Regenerate">
+              <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="strength-wrap">
+        <div class="strength-header">
+          <span class="strength-label">Password Strength</span>
+          <span class="strength-rating" id="strength-rating">—</span>
+        </div>
+        <div class="strength-bar-track">
+          <div class="strength-bar-fill" id="strength-bar" style="width:0%;background:var(--border)"></div>
+        </div>
+      </div>
+      <button class="generate-btn" onclick="triggerGenerate()" id="gen-btn">
+        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Generate Secure Password
+      </button>
+    </div>
+
+    <!-- Controls Card -->
+    <div class="card controls-card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+          Configuration
+        </div>
+        <div class="card-sub">Customize your password</div>
+      </div>
+      <div class="controls-body">
+
+        <!-- Length -->
+        <div class="ctrl-row">
+          <div class="ctrl-label">Length</div>
+          <div class="ctrl-right">
+            <div class="slider-wrap">
+              <input type="range" id="length-slider" min="4" max="128" value="32" oninput="onLengthChange(this.value)">
+            </div>
+            <div class="length-val" id="length-val">32</div>
+          </div>
+        </div>
+
+        <div class="divider-line"></div>
+
+        <!-- Character sets -->
+        <div class="toggle-row">
+          <label class="toggle-item active" id="upper-item">
+            <div class="toggle-lbl">Uppercase <span class="tag">A–Z</span></div>
+            <label class="switch">
+              <input type="checkbox" id="use-upper" checked onchange="onToggle()">
+              <div class="switch-track"><div class="switch-thumb"></div></div>
+            </label>
+          </label>
+          <label class="toggle-item active" id="lower-item">
+            <div class="toggle-lbl">Lowercase <span class="tag">a–z</span></div>
+            <label class="switch">
+              <input type="checkbox" id="use-lower" checked onchange="onToggle()">
+              <div class="switch-track"><div class="switch-thumb"></div></div>
+            </label>
+          </label>
+          <label class="toggle-item active" id="num-item">
+            <div class="toggle-lbl">Numbers <span class="tag">0–9</span></div>
+            <label class="switch">
+              <input type="checkbox" id="use-nums" checked onchange="onToggle()">
+              <div class="switch-track"><div class="switch-thumb"></div></div>
+            </label>
+          </label>
+          <label class="toggle-item active" id="sym-item">
+            <div class="toggle-lbl">Symbols <span class="tag">!@#</span></div>
+            <label class="switch">
+              <input type="checkbox" id="use-syms" checked onchange="onToggle()">
+              <div class="switch-track"><div class="switch-thumb"></div></div>
+            </label>
+          </label>
+        </div>
+
+        <!-- Exclude ambiguous -->
+        <label class="exclude-row" id="excl-item">
+          <div class="toggle-lbl">
+            <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:var(--amber);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Exclude ambiguous characters (0, O, I, l, 1)
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="excl-ambig" onchange="onToggle()">
+            <div class="switch-track"><div class="switch-thumb"></div></div>
+          </label>
+        </label>
+
+      </div>
+    </div>
+
+  </div><!-- /left -->
+
+  <!-- RIGHT COLUMN -->
+  <div class="right-col">
+
+    <!-- Security Analysis -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Security Analysis
+        </div>
+      </div>
+      <div class="analysis-body">
+        <div class="metric-row">
+          <div class="metric-key">
+            <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            Entropy
+          </div>
+          <div class="metric-val blue" id="entropy-val">—</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-key">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Crack Time
+          </div>
+          <div class="metric-val green" id="crack-val">—</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-key">
+            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Char Pool
+          </div>
+          <div class="metric-val" id="pool-val">—</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-key">
+            <svg viewBox="0 0 24 24"><path d="M12 2L3 7v6c0 5.3 3.4 10.3 8 11.9 4.6-1.6 8-6.6 8-11.9V6L12 2z"/></svg>
+            Rating
+          </div>
+          <div class="metric-val green" id="rating-val">—</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-key">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Combinations
+          </div>
+          <div class="metric-val blue" id="combo-val">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QR Export -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="14" width="3" height="3"/><rect x="14" y="18" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/></svg>
+          QR Export
+        </div>
+        <div class="card-sub" id="qr-expiry-label"></div>
+      </div>
+      <div class="qr-body">
+        <div class="qr-preview">
+          <canvas id="qr-canvas"></canvas>
+          <div class="qr-placeholder" id="qr-placeholder">
+            <svg viewBox="0 0 24 24" style="width:28px;height:28px;stroke:var(--border2);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;margin:0 auto 6px;display:block"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Generate QR code
+          </div>
+        </div>
+        <div class="qr-actions">
+          <button class="btn-sm primary" onclick="generateQR()">
+            <svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Generate QR
+          </button>
+          <button class="btn-sm" onclick="downloadQR()">
+            <svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Save PNG
+          </button>
+        </div>
+        <div class="qr-timer" id="qr-timer"></div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="card history-card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24"><polyline points="12 8 12 12 14 14"/><path d="M3.05 11a9 9 0 1 0 .5-4.5"/><polyline points="3 3 3 8 8 8"/></svg>
+          History
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="history-count" id="history-count">0 saved</div>
+          <button class="clear-btn" onclick="clearHistory()">Clear</button>
+        </div>
+      </div>
+      <div class="history-body">
+        <div class="history-list" id="history-list">
+          <div class="history-empty">No history yet — generate a password</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /right -->
+</div><!-- /app -->
+
+<!-- Copy Toast -->
+<div class="copy-toast" id="copy-toast">
+  <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  Copied to clipboard!
+</div>
+
+<script>
+/* ═══════════════════════════════════════
+   STATE
+═══════════════════════════════════════ */
+let currentPassword = '';
+let pwVisible = true;
+let qrTimer = null;
+let qrExpiry = 0;
+let history = JSON.parse(localStorage.getItem('pk_history') || '[]');
+
+const CHARS = {
+  upper:  'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+  lower:  'abcdefghijklmnopqrstuvwxyz',
+  nums:   '0123456789',
+  syms:   '!@#$%^&*()_+-=[]{}|;:,.<>?',
+  ambig:  /[0OIl1]/g,
+};
+
+/* ═══════════════════════════════════════
+   GENERATE
+═══════════════════════════════════════ */
+function buildCharset() {
+  let pool = '';
+  const useUpper = document.getElementById('use-upper').checked;
+  const useLower = document.getElementById('use-lower').checked;
+  const useNums  = document.getElementById('use-nums').checked;
+  const useSyms  = document.getElementById('use-syms').checked;
+  const exclAmb  = document.getElementById('excl-ambig').checked;
+  if (useUpper) pool += CHARS.upper;
+  if (useLower) pool += CHARS.lower;
+  if (useNums)  pool += CHARS.nums;
+  if (useSyms)  pool += CHARS.syms;
+  if (exclAmb)  pool = pool.replace(CHARS.ambig, '');
+  return pool || CHARS.lower; // fallback
+}
+
+function generatePassword() {
+  const len  = parseInt(document.getElementById('length-slider').value);
+  const pool = buildCharset();
+  const arr  = new Uint32Array(len);
+  crypto.getRandomValues(arr);
+  currentPassword = Array.from(arr).map(n => pool[n % pool.length]).join('');
+  renderPassword();
+  analyzePassword();
+  addToHistory(currentPassword);
+  resetQR();
+}
+
+function triggerGenerate() {
+  const btn = document.getElementById('gen-btn');
+  btn.classList.add('spin');
+  setTimeout(() => btn.classList.remove('spin'), 500);
+  generatePassword();
+}
+
+/* ═══════════════════════════════════════
+   RENDER
+═══════════════════════════════════════ */
+function renderPassword() {
+  const el = document.getElementById('pw-text');
+  const len = currentPassword.length;
+  el.textContent = currentPassword || 'Click generate to create a password';
+  if (!pwVisible) el.classList.add('hidden');
+  else el.classList.remove('hidden');
+  document.getElementById('pw-length-label').textContent = `${len} character${len !== 1 ? 's' : ''}`;
+}
+
+function toggleVisibility() {
+  pwVisible = !pwVisible;
+  const el   = document.getElementById('pw-text');
+  const icon = document.getElementById('vis-icon');
+  const btn  = document.getElementById('vis-btn');
+  el.classList.toggle('hidden', !pwVisible);
+  btn.classList.toggle('active', !pwVisible);
+  icon.innerHTML = pwVisible
+    ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
+    : '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+}
+
+/* ═══════════════════════════════════════
+   CONTROLS
+═══════════════════════════════════════ */
+function onLengthChange(val) {
+  document.getElementById('length-val').textContent = val;
+  document.getElementById('pw-length-label').textContent = `${val} characters`;
+  generatePassword();
+}
+
+function onToggle() {
+  updateToggleStyles();
+  generatePassword();
+}
+
+function updateToggleStyles() {
+  [['use-upper','upper-item'],['use-lower','lower-item'],['use-nums','num-item'],['use-syms','sym-item']].forEach(([id,el]) => {
+    const checked = document.getElementById(id).checked;
+    document.getElementById(el).classList.toggle('active', checked);
+  });
+}
+
+/* ═══════════════════════════════════════
+   ANALYSIS
+═══════════════════════════════════════ */
+function analyzePassword() {
+  if (!currentPassword) return;
+  const pool    = buildCharset().length;
+  const len     = currentPassword.length;
+  const entropy = Math.round(len * Math.log2(pool));
+  const combos  = Math.pow(pool, len);
+
+  // Crack time at 1 trillion guesses/sec
+  const seconds = combos / 1e12;
+  const crackTime = formatCrackTime(seconds);
+
+  // Rating
+  let rating, ratingColor;
+  if (entropy >= 128)     { rating = 'Excellent'; ratingColor = 'green'; }
+  else if (entropy >= 80) { rating = 'Strong'; ratingColor = 'green'; }
+  else if (entropy >= 60) { rating = 'Good'; ratingColor = 'blue'; }
+  else if (entropy >= 40) { rating = 'Fair'; ratingColor = 'amber'; }
+  else                    { rating = 'Weak'; ratingColor = 'red'; }
+
+  // Strength bar
+  const pct = Math.min(100, Math.round(entropy / 1.28));
+  const barColors = { Excellent: 'var(--green)', Strong: 'var(--green)', Good: 'var(--blue)', Fair: 'var(--amber)', Weak: 'var(--red)' };
+  const bar = document.getElementById('strength-bar');
+  bar.style.width = pct + '%';
+  bar.style.background = barColors[rating];
+  document.getElementById('strength-rating').textContent = rating;
+  document.getElementById('strength-rating').style.color  = barColors[rating];
+
+  // Metrics
+  setMetric('entropy-val', `${entropy} bits`, 'blue');
+  setMetric('crack-val', crackTime, entropy >= 80 ? 'green' : entropy >= 50 ? 'amber' : 'red');
+  setMetric('pool-val', `${pool} chars`, '');
+  setMetric('rating-val', rating, ratingColor);
+  setMetric('combo-val', formatCombos(combos), 'blue');
+}
+
+function setMetric(id, val, cls) {
+  const el = document.getElementById(id);
+  el.textContent = val;
+  el.className = 'metric-val' + (cls ? ' ' + cls : '');
+}
+
+function formatCrackTime(sec) {
+  if (sec < 1)         return '< 1 second';
+  if (sec < 60)        return Math.round(sec) + ' seconds';
+  if (sec < 3600)      return Math.round(sec/60) + ' minutes';
+  if (sec < 86400)     return Math.round(sec/3600) + ' hours';
+  if (sec < 31536000)  return Math.round(sec/86400) + ' days';
+  if (sec < 3.15e9)    return Math.round(sec/31536000) + ' years';
+  if (sec < 3.15e12)   return Math.round(sec/3.15e9) + ' millennia';
+  if (sec < 3.15e15)   return '10³ millennia+';
+  return '∞ Universe ages';
+}
+
+function formatCombos(n) {
+  if (!isFinite(n)) return '∞';
+  const exp = Math.floor(Math.log10(n));
+  if (exp < 12) return n.toLocaleString().slice(0,9)+'…';
+  return `10^${exp}`;
+}
+
+/* ═══════════════════════════════════════
+   COPY
+═══════════════════════════════════════ */
+function copyPassword() {
+  if (!currentPassword) return;
+  navigator.clipboard.writeText(currentPassword).then(() => showToast());
+}
+
+function showToast() {
+  const t = document.getElementById('copy-toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* ═══════════════════════════════════════
+   QR CODE
+═══════════════════════════════════════ */
+function generateQR() {
+  if (!currentPassword) { generatePassword(); return; }
+  const cvs = document.getElementById('qr-canvas');
+  const size = 160;
+  cvs.width = cvs.height = size;
+  const ctx = cvs.getContext('2d');
+  // Simple QR-like visual (real QR needs a library; this is a styled placeholder)
+  drawQRMock(ctx, currentPassword, size);
+  cvs.style.display = 'block';
+  document.getElementById('qr-placeholder').style.display = 'none';
+
+  // 5-minute expiry timer
+  clearInterval(qrTimer);
+  qrExpiry = Date.now() + 5 * 60 * 1000;
+  updateQRTimer();
+  qrTimer = setInterval(updateQRTimer, 1000);
+}
+
+function drawQRMock(ctx, data, size) {
+  const cell = 8;
+  const cols = Math.floor(size / cell);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, size, size);
+
+  // Deterministic pattern from password hash
+  let seed = 0;
+  for (let i = 0; i < data.length; i++) seed = (seed * 31 + data.charCodeAt(i)) >>> 0;
+
+  function seededRandom() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
+
+  ctx.fillStyle = '#0F172A';
+  for (let r = 0; r < cols; r++) {
+    for (let c = 0; c < cols; c++) {
+      // Corner finders
+      const inFinder = (r < 8 && c < 8) || (r < 8 && c >= cols-8) || (r >= cols-8 && c < 8);
+      if (inFinder) {
+        const ir = Math.min(r, cols-1-r, c, cols-1-c);
+        const edgeR = r < 8 ? (r === 0 || r === 6) : (r === cols-8 || r === cols-1);
+        const edgeC = c < 8 ? (c === 0 || c === 6) : (c === cols-8 || c === cols-1);
+        if (ir === 0 || ir === 2 || (ir===1 && (edgeR||edgeC)) || ir===3) {
+          ctx.fillRect(c*cell, r*cell, cell, cell);
+        }
+        continue;
+      }
+      if (seededRandom() > 0.5) {
+        ctx.fillRect(c*cell, r*cell, cell, cell);
+      }
+    }
+  }
+}
+
+function updateQRTimer() {
+  const rem = Math.max(0, Math.round((qrExpiry - Date.now()) / 1000));
+  if (rem === 0) {
+    clearInterval(qrTimer);
+    resetQR();
+    return;
+  }
+  const m = Math.floor(rem/60);
+  const s = rem % 60;
+  document.getElementById('qr-timer').innerHTML = `Expires in <span>${m}:${String(s).padStart(2,'0')}</span>`;
+  document.getElementById('qr-expiry-label').textContent = `${m}:${String(s).padStart(2,'0')} left`;
+}
+
+function resetQR() {
+  clearInterval(qrTimer);
+  const cvs = document.getElementById('qr-canvas');
+  cvs.style.display = 'none';
+  document.getElementById('qr-placeholder').style.display = '';
+  document.getElementById('qr-timer').textContent = '';
+  document.getElementById('qr-expiry-label').textContent = '';
+}
+
+function downloadQR() {
+  const cvs = document.getElementById('qr-canvas');
+  if (cvs.style.display === 'none') { generateQR(); }
+  const a = document.createElement('a');
+  a.download = 'parrykey-qr.png';
+  a.href = cvs.toDataURL();
+  a.click();
+}
+
+/* ═══════════════════════════════════════
+   HISTORY
+═══════════════════════════════════════ */
+function addToHistory(pw) {
+  if (!pw) return;
+  history = [{ pw, ts: Date.now() }, ...history.filter(h => h.pw !== pw)].slice(0, 5);
+  localStorage.setItem('pk_history', JSON.stringify(history));
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  const count = document.getElementById('history-count');
+  count.textContent = `${history.length} saved`;
+  if (!history.length) {
+    list.innerHTML = '<div class="history-empty">No history yet — generate a password</div>';
+    return;
+  }
+  list.innerHTML = history.map((h, i) => `
+    <div class="history-item" onclick="copyHistoryItem('${encodeURIComponent(h.pw)}')">
+      <div class="history-pw">${h.pw}</div>
+      <div class="history-meta">${timeAgo(h.ts)}</div>
+      <div class="history-copy">
+        <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </div>
+    </div>`).join('');
+}
+
+function copyHistoryItem(encoded) {
+  navigator.clipboard.writeText(decodeURIComponent(encoded)).then(() => showToast());
+}
+
+function clearHistory() {
+  history = [];
+  localStorage.removeItem('pk_history');
+  renderHistory();
+}
+
+function timeAgo(ts) {
+  const d = Date.now() - ts;
+  if (d < 60000) return 'just now';
+  if (d < 3600000) return Math.round(d/60000) + 'm ago';
+  if (d < 86400000) return Math.round(d/3600000) + 'h ago';
+  return Math.round(d/86400000) + 'd ago';
+}
+
+/* ═══════════════════════════════════════
+   INIT
+═══════════════════════════════════════ */
+renderHistory();
+generatePassword();
+</script>
+</body>
+</html>

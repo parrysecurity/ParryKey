@@ -30,7 +30,8 @@
 </div>
 
 ---
-<img width="1672" height="941" alt="ChatGPT Image May 20, 2026, 03_03_38 PM" src="https://github.com/user-attachments/assets/12906f80-ac69-4e75-a0fa-3cf0650284bc" />
+
+<img width="1536" height="1024" alt="ChatGPT Image May 20, 2026, 06_20_59 PM" src="https://github.com/user-attachments/assets/6309970f-c86e-47a6-89ea-0fbd4400294d" />
 
 # 📖 Table of Contents
 
